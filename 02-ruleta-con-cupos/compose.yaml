@@ -1,0 +1,20 @@
+# docker compose up -d --build    y abre http://127.0.0.1:8102
+# El panel de administración está en http://127.0.0.1:8102/admin (la clave va en .env).
+services:
+  sorteo:
+    build: .
+    environment:
+      PORT: "8080"
+      SORTEO_DATOS: /datos
+      SORTEO_CLAVE: ${SORTEO_CLAVE:-cambia-esta-clave-larga}
+      SORTEO_CIERRE: ${SORTEO_CIERRE:-2027-06-30T23:59:00-05:00}
+    ports:
+      - "127.0.0.1:${PUERTO:-8102}:8080"
+    volumes:
+      - datos:/datos
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+volumes:
+  datos: {}

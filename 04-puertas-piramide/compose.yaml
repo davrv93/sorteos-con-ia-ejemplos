@@ -1,0 +1,19 @@
+# docker compose up -d --build    y abre http://127.0.0.1:8104
+# El panel de administración está en http://127.0.0.1:8104/admin (la clave va en .env).
+services:
+  sorteo:
+    build: .
+    environment:
+      PORT: "8080"
+      PIRAMIDE_DATOS: /datos
+      PIRAMIDE_CLAVE: ${PIRAMIDE_CLAVE:-cambia-esta-clave-larga}
+    ports:
+      - "127.0.0.1:${PUERTO:-8104}:8080"
+    volumes:
+      - datos:/datos
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+volumes:
+  datos: {}

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruleta de un premio</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --crema: #fff4de; --tinta: #1b1f3b; --banana: #ffc93c; --rojo: #d83a3f; --verde: #1f7a4d; --suave: #5b5f80; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--crema); background-image: radial-gradient(rgba(27,31,59,.08) 2px, transparent 2px); background-size: 26px 26px; color: var(--tinta); font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: grid; place-items: start center; padding: 22px 16px 40px; }
+  main { width: 100%; max-width: 460px; display: grid; gap: 16px; justify-items: center; text-align: center; }
+  .ceja { font: 700 13px/1 ui-monospace, Menlo, monospace; letter-spacing: .16em; color: var(--rojo); margin: 6px 0 0; }
+  h1 { margin: 0; font-size: 34px; line-height: 1.05; letter-spacing: -.02em; }
+  h1 em { font-style: normal; color: #b07a00; }
+  .sub { margin: 0; color: var(--suave); font-size: 16px; }
+  .ruleta-w { position: relative; width: min(84vw, 330px); aspect-ratio: 1; margin: 6px 0 2px; }
+  .flecha { position: absolute; left: 50%; top: -6px; width: 0; height: 0; margin-left: -15px; border: 15px solid transparent; border-top: 26px solid var(--tinta); z-index: 2; filter: drop-shadow(0 3px 0 rgba(0,0,0,.2)); }
+  #ruleta { width: 100%; height: 100%; border-radius: 50%; border: 6px solid var(--tinta); box-shadow: 0 8px 0 var(--tinta); position: relative; overflow: hidden; transition: transform 5.2s cubic-bezier(.12,.72,.08,1); }
+  #ruleta span { position: absolute; left: 50%; top: 50%; width: 0; height: 0; font-size: 24px; }
+  #ruleta span b { position: absolute; left: -16px; top: calc(-1 * min(35vw, 138px)); width: 32px; text-align: center; font-weight: 400; }
+  .centro { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; background: var(--tinta); color: var(--banana); display: grid; place-items: center; font-weight: 800; font-size: 15px; z-index: 1; }
+  .caja { width: 100%; background: #fff; border: 3px solid var(--tinta); border-radius: 18px; box-shadow: 0 6px 0 var(--tinta); padding: 16px; display: grid; gap: 12px; }
+  label { font-weight: 700; text-align: left; font-size: 15px; }
+  input { width: 100%; min-height: 52px; padding: 10px 14px; font: inherit; font-size: 18px; border: 3px solid var(--tinta); border-radius: 12px; background: var(--crema); color: var(--tinta); }
+  input:focus { outline: 4px solid rgba(255,201,60,.7); }
+  button { min-height: 56px; border: 3px solid var(--tinta); border-radius: 14px; background: var(--banana); color: var(--tinta); font: inherit; font-weight: 800; font-size: 20px; cursor: pointer; box-shadow: 0 5px 0 var(--tinta); }
+  button:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--tinta); }
+  button:disabled { opacity: .55; cursor: default; }
+  .msg { margin: 0; min-height: 1.4em; font-weight: 700; color: var(--rojo); }
+  #res { display: none; }
+  #res.ver { display: grid; }
+  #res h2 { margin: 0; font-size: 30px; line-height: 1.1; }
+  #res.gano { background: #eafff2; border-color: var(--verde); box-shadow: 0 6px 0 var(--verde); }
+  #res.gano h2 { color: var(--verde); }
+  #res p { margin: 0; }
+  .codigo { font: 800 26px/1 ui-monospace, Menlo, monospace; letter-spacing: .08em; padding: 12px; border: 3px dashed var(--verde); border-radius: 12px; background: #fff; }
+  .pie { color: var(--suave); font-size: 14px; margin: 0; }
+  .conf { position: fixed; top: -20px; width: 10px; height: 16px; border-radius: 2px; animation: caer linear forwards; z-index: 5; pointer-events: none; }
+  @keyframes caer { to { transform: translateY(110vh) rotate(720deg); } }
+  @media (prefers-reduced-motion: reduce) { #ruleta { transition-duration: .01s; } .conf { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="ceja">TALLER DE IA · SORTEO EN CLASE</p>
+  <h1>Sorteo de <em>un premio</em> en clase</h1>
+  <p class="sub">Escribe tu nombre y gira. Un solo giro por persona: en la ruleta hay un premio y muchos plátanos.</p>
+  <div class="ruleta-w"><div class="flecha" aria-hidden="true"></div><div id="ruleta" aria-hidden="true"></div><div class="centro" aria-hidden="true">GIRA</div></div>
+  <section class="caja" id="entrada">
+    <label for="nombre">Tu nombre y apellido</label>
+    <input id="nombre" maxlength="40" autocomplete="name" placeholder="Como figuras en el taller">
+    <button type="button" id="girar">🎰 Girar la ruleta</button>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+  <section class="caja" id="res" aria-live="polite"><h2 id="res-t"></h2><p id="res-p"></p><div class="codigo" id="res-c" hidden></div><p class="pie" id="res-n"></p></section>
+  <p class="pie" id="pie">Cargando…</p>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var N = 12, PREMIO = 0, rueda = $("ruleta"), girando = false;
+  // 12 casillas: la 0 es el premio (dorada) y las demás llevan un plátano.
+  var tonos = [];
+  for (var i = 0; i < N; i++) tonos.push((i === PREMIO ? "#ffc93c" : i % 2 ? "#fff" : "#ffe9b8") + " " + (i * 30) + "deg " + ((i + 1) * 30) + "deg");
+  rueda.style.background = "conic-gradient(from -15deg, " + tonos.join(", ") + ")";
+  for (var j = 0; j < N; j++) { var s = document.createElement("span"), b = document.createElement("b"); s.style.transform = "rotate(" + (j * 30) + "deg)"; b.textContent = j === PREMIO ? "💰" : "🍌"; s.appendChild(b); rueda.appendChild(s); }
+
+  function decir(t) { $("msg").textContent = t || ""; }
+  function confeti() {
+    var c = ["#ffc93c", "#d83a3f", "#1f7a4d", "#3d5afe", "#ff8a5c"];
+    for (var i = 0; i < 70; i++) { var d = document.createElement("i"); d.className = "conf"; d.style.left = Math.random() * 100 + "vw"; d.style.background = c[i % c.length]; d.style.animationDuration = 2 + Math.random() * 2.5 + "s"; d.style.animationDelay = Math.random() * 0.8 + "s"; document.body.appendChild(d); setTimeout(function (x) { x.remove(); }, 6000, d); }
+  }
+  function mostrar(r) {
+    $("entrada").style.display = "none";
+    var caja = $("res"); caja.className = "caja ver" + (r.gano ? " gano" : "");
+    if (r.gano) {
+      $("res-t").textContent = "¡GANASTE, " + r.nombre.split(" ")[0] + "! 💰";
+      $("res-p").textContent = "Te llevas el premio. Muéstrale este código a quien organiza:";
+      $("res-c").hidden = false; $("res-c").textContent = r.codigo;
+      confeti();
+    } else {
+      $("res-t").textContent = "Te tocó plátano 🍌";
+      $("res-p").textContent = r.ganador ? "El premio ya salió: se lo llevó " + r.ganador + "." : "Esta vez no fue. El premio sigue en la ruleta: alguien de la clase se lo va a llevar.";
+      $("res-c").hidden = true;
+    }
+    $("res-n").textContent = r.nombre + " · giro n.º " + r.n;
+  }
+  function girarA(gano, luego) {
+    var casilla = gano ? PREMIO : 1 + Math.floor(Math.random() * (N - 1));
+    rueda.style.transform = "rotate(" + (360 * 6 - casilla * 30) + "deg)";
+    setTimeout(luego, matchMedia("(prefers-reduced-motion: reduce)").matches ? 50 : 5400);
+  }
+  function girar() {
+    if (girando) return;
+    var nombre = $("nombre").value.trim();
+    if (nombre.length < 3) { decir("Escribe tu nombre y apellido."); $("nombre").focus(); return; }
+    girando = true; $("girar").disabled = true; decir("");
+    fetch("api/girar", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nombre: nombre }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (!x.ok) { girando = false; $("girar").disabled = false; decir(x.d.error || "No se pudo girar."); return; }
+        if (x.d.repetido) { decir(""); mostrar(x.d); estado(); return; }
+        girarA(x.d.gano, function () { mostrar(x.d); estado(); });
+      })
+      .catch(function () { girando = false; $("girar").disabled = false; decir("Sin conexión. Intenta otra vez."); });
+  }
+  function estado() {
+    fetch("api/estado", { credentials: "same-origin", cache: "no-store" }).then(function (r) { return r.json(); }).then(function (e) {
+      $("pie").textContent = (e.giros === 1 ? "Ya giró 1 persona" : "Ya giraron " + e.giros + " personas") + (e.ganador ? " · Ganó: " + e.ganador : " · El premio sigue en juego") + (e.cerrado ? " · Sorteo cerrado" : "");
+      if (e.yo && !girando) mostrar(e.yo);
+      if (e.yo && !e.yo.gano && e.ganador && $("res").className.indexOf("ver") >= 0) $("res-p").textContent = "El premio ya salió: se lo llevó " + e.ganador + ".";
+      if (e.cerrado && !e.yo) { $("girar").disabled = true; decir("El sorteo ya cerró."); }
+    }).catch(function () {});
+  }
+  $("girar").addEventListener("click", girar);
+  $("nombre").addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); girar(); } });
+  estado(); setInterval(estado, 5000);
+})();
+</script>
+</body>
+</html>

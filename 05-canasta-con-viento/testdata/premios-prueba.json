@@ -1,0 +1,89 @@
+{
+  "premios": [
+    {
+      "id": "qwen",
+      "nombre": "Taller de ejemplo A",
+      "etiqueta": "100 % gratis",
+      "cupos": 0,
+      "grupos": [
+        {
+          "id": "G3",
+          "dias": "Fechas de ejemplo",
+          "hora": "8:00 – 9:15 a. m."
+        },
+        {
+          "id": "G2",
+          "dias": "Fechas de ejemplo",
+          "hora": "10:15 – 11:15 p. m."
+        }
+      ],
+      "precio": 35,
+      "corto": "Taller A"
+    },
+    {
+      "id": "videos",
+      "nombre": "Taller de ejemplo B",
+      "etiqueta": "100 % gratis",
+      "cupos": 0,
+      "dias": "Fechas de ejemplo",
+      "precio": 25,
+      "corto": "Taller B"
+    },
+    {
+      "id": "documenta",
+      "nombre": "Taller de ejemplo C",
+      "corto": "Taller C",
+      "etiqueta": "100 % gratis",
+      "cupos": 1,
+      "dias": "Fechas de ejemplo"
+    },
+    {
+      "id": "tutoriales",
+      "nombre": "Taller de ejemplo D",
+      "corto": "Taller D",
+      "etiqueta": "100 % gratis",
+      "cupos": 1,
+      "precio": 25,
+      "dias": "Fechas de ejemplo"
+    },
+    {
+      "id": "cerebros",
+      "nombre": "Taller de ejemplo E",
+      "corto": "Taller E",
+      "etiqueta": "100 % gratis",
+      "cupos": 1,
+      "precio": 35,
+      "dias": "Fechas de ejemplo"
+    },
+    {
+      "id": "gsap",
+      "nombre": "Taller de ejemplo F",
+      "corto": "Taller F",
+      "etiqueta": "100 % gratis",
+      "cupos": 1,
+      "precio": 20,
+      "dias": "Fechas de ejemplo"
+    }
+  ],
+  "consuelo": {
+    "especial_paga_pct": 20,
+    "especial_cupos": 1,
+    "especial_texto": "80 % de descuento",
+    "premio": {
+      "texto": "Acceso web a cualquier curso del catálogo",
+      "precio": 10,
+      "vigencia": "1 año",
+      "incluye": [
+        "materiales",
+        "video resumen",
+        "la grabación de Zoom de cada sesión"
+      ],
+      "no_incluye": "las clases en vivo",
+      "url_catalogo": "https://example.com/cursos/"
+    },
+    "especial_cursos": [
+      "qwen",
+      "videos"
+    ]
+  }
+}

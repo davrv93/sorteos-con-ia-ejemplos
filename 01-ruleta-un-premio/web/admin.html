@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel · Ruleta de un premio</title>
+<link rel="icon" href="data:,">
+<style>
+  body { margin: 0; padding: 20px 16px 40px; background: #fff4de; color: #1b1f3b; font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 620px; margin: 0 auto; display: grid; gap: 14px; }
+  h1 { margin: 0; font-size: 26px; }
+  .caja { background: #fff; border: 3px solid #1b1f3b; border-radius: 14px; padding: 14px; }
+  .gana { background: #eafff2; border-color: #1f7a4d; font-size: 20px; font-weight: 800; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6dcc6; }
+  button { min-height: 46px; padding: 8px 14px; border: 3px solid #1b1f3b; border-radius: 12px; background: #ffc93c; font: inherit; font-weight: 800; cursor: pointer; margin: 4px 6px 4px 0; }
+  button.rojo { background: #d83a3f; color: #fff; }
+  .suave { color: #5b5f80; font-size: 14px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Panel · Ruleta de un premio</h1>
+  <div class="caja" id="resumen">Cargando…</div>
+  <div class="caja">
+    <button type="button" id="cerrar">Cerrar el sorteo</button>
+    <button type="button" class="rojo" id="reiniciar">Reiniciar (borra todo)</button>
+    <p class="suave">«Cerrar» ya no deja girar a nadie más. Si hasta ese momento nadie acertó el giro premiado, el premio se sortea al azar entre quienes giraron: siempre hay ganador.</p>
+  </div>
+  <div class="caja"><table><thead><tr><th>N.º</th><th>Nombre</th><th>Hora</th><th></th></tr></thead><tbody id="filas"></tbody></table></div>
+</main>
+<script>
+(function () {
+  var k = new URLSearchParams(location.search).get("k") || "", $ = function (id) { return document.getElementById(id); };
+  function pintar(e) {
+    var r = $("resumen");
+    r.className = "caja" + (e.ganador ? " gana" : "");
+    r.textContent = e.ganador ? "Ganó: " + e.ganador + " · código " + e.codigo + (e.por_cierre ? " (sorteado al cerrar)" : " (acertó el giro premiado)")
+      : "Todavía no hay ganador · " + e.giros.length + " giros · el giro premiado es el n.º " + e.premiado + " de " + e.total + (e.cerrado ? " · cerrado" : "");
+    var f = $("filas"); f.textContent = "";
+    e.giros.forEach(function (g) {
+      var tr = document.createElement("tr");
+      [g.n, g.nombre, new Date(g.hora).toLocaleTimeString("es-PE"), g.gano ? "💰 GANÓ" : "🍌"].forEach(function (v) { var td = document.createElement("td"); td.textContent = v; tr.appendChild(td); });
+      f.appendChild(tr);
+    });
+  }
+  function leer() { fetch("api/admin/estado?k=" + encodeURIComponent(k), { cache: "no-store" }).then(function (r) { return r.json(); }).then(pintar).catch(function () {}); }
+  function accion(ruta) { fetch(ruta + "?k=" + encodeURIComponent(k), { method: "POST" }).then(leer); }
+  var armado = {};
+  function confirmar(b, ruta, texto) { b.addEventListener("click", function () { if (!armado[ruta]) { armado[ruta] = b.textContent; b.textContent = texto; setTimeout(function () { b.textContent = armado[ruta]; armado[ruta] = null; }, 4000); return; } b.textContent = armado[ruta]; armado[ruta] = null; accion(ruta); }); }
+  confirmar($("cerrar"), "api/admin/cerrar", "¿Seguro? Toca otra vez para cerrar");
+  confirmar($("reiniciar"), "api/admin/reiniciar", "¿Seguro? Toca otra vez para borrar todo");
+  leer(); setInterval(leer, 4000);
+})();
+</script>
+</body>
+</html>

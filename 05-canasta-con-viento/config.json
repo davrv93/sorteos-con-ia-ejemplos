@@ -1,0 +1,66 @@
+{
+  "titulo": "Sorteo basket con viento",
+  "taller": "Taller de ejemplo",
+  "meta": 6,
+  "limite_ms": 25000,
+  "espera_ms": 900,
+  "viento": {
+    "cada_ms": 3000,
+    "max": 0.8,
+    "tolerancia": 0.17,
+    "caida": 0.45
+  },
+  "por_ip": 40,
+  "max_jugadores": 400,
+  "abierto_al_iniciar": false,
+  "revelar_ms": 3200,
+  "premios": [
+    {
+      "id": "taller",
+      "nombre": "Taller de ejemplo",
+      "corto": "Taller",
+      "etiqueta": "100 % gratis",
+      "cupos": 2,
+      "precio": 30,
+      "dias": "Fechas de ejemplo"
+    }
+  ],
+  "medidor": {
+    "periodos_ms": [
+      1050,
+      1000,
+      950,
+      900,
+      850,
+      800
+    ],
+    "media_zona": 0.07,
+    "centro_min": 0.55,
+    "centro_max": 0.85,
+    "prob_perfecto": 0.7,
+    "prob_borde": 0.7,
+    "prob_cerca": 0.15,
+    "prob_lejos": 0.02
+  },
+  "whatsapp": "51900000000",
+  "consuelo": {
+    "especial_paga_pct": 20,
+    "especial_cupos": 1,
+    "especial_texto": "80 % de descuento",
+    "premio": {
+      "texto": "Acceso web a un curso de tu catálogo",
+      "precio": 10,
+      "vigencia": "1 año",
+      "incluye": [
+        "materiales",
+        "video resumen",
+        "la grabación de Zoom de cada sesión"
+      ],
+      "no_incluye": "las clases en vivo",
+      "url_catalogo": "https://example.com/cursos/"
+    },
+    "especial_cursos": [
+      "taller"
+    ]
+  }
+}

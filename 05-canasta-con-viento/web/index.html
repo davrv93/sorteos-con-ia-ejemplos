@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3eddf">
+<title>Sorteo basket con viento · Ejemplo</title>
+<meta name="description" content="Sorteo en vivo: mete 6 al aro en 25 segundos, con viento, y gana un cupo 100 % gratis.">
+<link rel="icon" href="img/icono.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/anton-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<script src="muneco.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body class="en-entrada">
+<div class="pared" aria-hidden="true"></div>
+
+<!-- Entrada -->
+<main id="entrada" class="entrada">
+  <header class="portada">
+    <p class="cinta cinta-tinta">Sorteo en vivo del taller</p>
+    <h1 class="titulo">Tira contra el viento</h1>
+    <div class="franja-roja">
+      <p class="taller js-taller">Taller de ejemplo</p>
+      <canvas id="vista" class="vista" width="220" height="260" aria-label="Tu muñequito"></canvas>
+    </div>
+    <p class="bajada">Tienes <strong>25 segundos</strong> para meter <strong>6 encestes</strong>, con viento que cambia. Los primeros en lograrlo ganan un cupo <strong>100 % gratis</strong>. Mientras queden cupos.</p>
+  </header>
+
+  <section class="hoja hoja-form torn-a" aria-labelledby="t-form">
+    <h2 id="t-form" class="sub">Entra a la cancha</h2>
+    <form id="form" novalidate>
+      <label class="campo">
+        <span>Nombre y apellido</span>
+        <input id="nombre" name="nombre" autocomplete="name" maxlength="40" required placeholder="Ana Ruiz">
+      </label>
+      <label class="campo">
+        <span>WhatsApp</span>
+        <input id="tel" name="tel" inputmode="numeric" autocomplete="tel-national" maxlength="15" required placeholder="987 654 321">
+      </label>
+      <div class="fila-muneco">
+        <p>Este es tu muñequito.</p>
+        <button type="button" id="otro" class="boton-chico">Cambiar muñequito</button>
+      </div>
+      <p id="error" class="error" role="alert" hidden></p>
+      <button type="submit" id="entrar" class="boton-grande">Entrar a jugar</button>
+      <p class="nota">Tu WhatsApp solo lo ve el profe, para inscribirte si ganas. En pantalla sale tu nombre y la inicial de tu apellido.</p>
+    </form>
+  </section>
+
+  <section class="premios" aria-labelledby="t-premios">
+    <h2 id="t-premios" class="sub">Lo que se sortea</h2>
+    <div id="premios-entrada" class="lista-premios"></div>
+  </section>
+
+  <section class="hoja hoja-reglas torn-b" aria-labelledby="t-reglas">
+    <h2 id="t-reglas" class="sub">Cómo se juega</h2>
+    <ol class="pasos">
+      <li>Tienes una sola ronda de <strong>25 segundos</strong>. Empieza a correr cuando pulsas «Empezar».</li>
+      <li>Mira el viento: la flecha dice hacia dónde sopla y con qué fuerza. Cambia cada pocos segundos.</li>
+      <li>Apunta al lado contrario para compensarlo: desliza la barra de puntería o usa las flechas ← →.</li>
+      <li>La barra de fuerza sube y baja: tócala cuando pase por la franja amarilla.</li>
+      <li>Puedes tirar cada 0,9 segundos. Si metes 6 antes de que se acabe el tiempo, el sistema sortea tu premio entre los cupos que quedan.</li>
+    </ol>
+  </section>
+</main>
+
+<!-- Juego -->
+<main id="juego" class="juego" hidden>
+  <header class="barra">
+    <p class="barra-taller js-taller">Taller de ejemplo</p>
+    <p id="cupos-barra" class="cupos-barra"></p>
+  </header>
+  <div class="tablero">
+    <div id="estado-yo" class="estado-yo">
+      <div id="bolas" class="bolas" aria-label="Tus encestes"></div>
+      <p id="mensaje" class="mensaje" aria-live="polite"></p>
+      <p id="cupos-tira" class="cupos-barra cupos-tira"></p>
+    </div>
+    <section class="cancha" aria-label="Cancha en vivo">
+      <canvas id="cancha"></canvas>
+      <div id="reloj" class="reloj" hidden aria-live="off"><span id="reloj-num">25,0</span><small>segundos</small></div>
+      <div id="viento" class="viento" hidden role="status" aria-live="polite">
+        <span class="viento-et">Viento</span>
+        <svg class="viento-flecha" id="viento-flecha" viewBox="0 0 120 40" aria-hidden="true"><path d="M6 20 H96" /><path d="M84 8 L108 20 L84 32" /></svg>
+        <strong id="viento-num">0,0</strong>
+      </div>
+      <div id="pops" class="pops" aria-hidden="true"></div>
+      <p id="aviso-juego" class="aviso-juego" hidden></p>
+    </section>
+    <section class="control" aria-label="Tiro">
+      <div class="punteria" id="punteria-caja">
+        <span class="punteria-et">← Izquierda</span>
+        <input id="punteria" type="range" min="-100" max="100" step="1" value="0" aria-label="Puntería: compensa el viento apuntando al lado contrario">
+        <span class="punteria-et">Derecha →</span>
+      </div>
+      <div class="medidor" id="medidor" aria-hidden="true">
+        <div class="medidor-zona" id="zona"><span class="medidor-centro"></span></div>
+        <div class="medidor-aguja" id="aguja"></div>
+        <span class="medidor-et medidor-suave">Suave</span>
+        <span class="medidor-et medidor-fuerte">Fuerte</span>
+      </div>
+      <button id="lanzar" class="lanzar" type="button" disabled>
+        <span class="lanzar-carga" id="carga"></span>
+        <span class="lanzar-texto" id="lanzar-texto">Lanzar</span>
+      </button>
+      <p class="tecla">En compu: ← → apuntar · barra espaciadora tirar</p>
+    </section>
+  </div>
+  <aside class="lado" aria-label="Tabla y premios">
+    <section class="tabla-sec" aria-labelledby="t-tabla">
+      <div class="tabla-cab">
+        <h2 id="t-tabla" class="sub">Tabla en vivo</h2>
+        <p id="en-cancha" class="en-cancha"></p>
+      </div>
+      <ol id="tabla" class="tabla"></ol>
+      <button type="button" id="ver-todo" class="boton-chico ver-todo" hidden>Ver toda la tabla</button>
+    </section>
+    <section class="premios premios-lado" aria-labelledby="t-premios2">
+      <h2 id="t-premios2" class="sub">Cupos</h2>
+      <div id="premios-juego" class="lista-premios"></div>
+    </section>
+  </aside>
+</main>
+
+<!-- Premio: sorteo de la tarjeta -->
+<div id="revelar" class="capa revelar" hidden role="dialog" aria-modal="true" aria-labelledby="rev-t">
+  <div class="revelar-hoja">
+    <p class="cinta cinta-roja" id="rev-cinta">6 encestes en 25 s</p>
+    <h2 id="rev-t" class="titulo-medio">Ganaste</h2>
+    <p id="rev-sub" class="rev-sub">Sorteando tu premio…</p>
+    <div id="rev-cartas" class="rev-cartas"></div>
+    <div id="rev-grupos" class="rev-grupos" hidden></div>
+    <div id="rev-final" class="rev-final" hidden></div>
+    <button type="button" id="rev-ok" class="boton-grande" hidden>Volver a la cancha</button>
+  </div>
+</div>
+
+<!-- Ceremonia -->
+<div id="ceremonia" class="capa ceremonia" hidden role="dialog" aria-modal="true" aria-labelledby="cer-t">
+  <div class="cer-fondo" aria-hidden="true"></div>
+  <div id="cer-fiesta" class="cer-fiesta" aria-hidden="true"></div>
+  <div class="cer-contenido">
+    <p class="cinta cinta-amarilla">Cierre del sorteo</p>
+    <div id="cer-mio" class="cer-mio"></div>
+    <h2 id="cer-t" class="titulo-medio cer-titulo">Los ganadores</h2>
+    <div id="cer-escena" class="cer-escena" aria-live="polite"></div>
+    <ol id="cer-lista" class="cer-lista"></ol>
+    <p id="cer-pie" class="cer-pie" hidden></p>
+  </div>
+</div>
+
+<div id="conexion" class="conexion" hidden role="status">Reconectando…</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

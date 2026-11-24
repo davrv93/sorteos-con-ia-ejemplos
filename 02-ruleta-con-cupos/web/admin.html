@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Panel · Ruleta con cupos</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --fondo: #faf6f3; --tinta: #1c1a20; --suave: #5b5459; --tarjeta: #fff; --borde: #e7dbd4; --acento: #b8321f; --sobre-acento: #fff; --rojo: #a3200f; --foco: #d99a00; }
+  @media (prefers-color-scheme: dark) { :root { --fondo: #121015; --tinta: #f3eeea; --suave: #bcb3ae; --tarjeta: #1c191f; --borde: #352f35; --acento: #ff8a76; --sobre-acento: #1c0a06; --rojo: #ff9b8a; --foco: #ffc94d; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 20px 16px 40px; background: var(--fondo); color: var(--tinta); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; display: grid; gap: 14px; }
+  h1 { margin: 0; font-size: 24px; }
+  .caja { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; overflow-x: auto; }
+  .cifras { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .cifras b { font: 800 22px/1 ui-monospace, Menlo, monospace; display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+  .mono { font-family: ui-monospace, Menlo, monospace; }
+  .p-gratis { background: #c9a227; color: #1a1400; } .p-s29 { background: #4d6bfe; color: #fff; } .p-s32 { background: #1b1f3b; color: #fff; } .p-s35 { background: #e8ebf7; color: #1b1f3b; }
+  .ficha { border-radius: 6px; padding: 1px 6px; font-weight: 800; }
+  button { min-height: 44px; padding: 8px 14px; border: 2px solid var(--acento); border-radius: 12px; background: var(--acento); color: var(--sobre-acento); font: inherit; font-weight: 800; cursor: pointer; margin: 4px 6px 4px 0; }
+  button.sec { background: transparent; color: var(--acento); }
+  button.rojo { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+  :focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+  a { color: var(--acento); }
+  .suave { color: var(--suave); font-size: 13px; margin: 6px 0 0; }
+  #msg { font-weight: 700; min-height: 1.4em; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Panel · Ruleta con cupos</h1>
+  <div class="caja"><div class="cifras" id="cifras">Cargando…</div></div>
+  <div class="caja">
+    <button type="button" id="cerrar">Cerrar ahora</button>
+    <button type="button" class="sec" id="reabrir">Reabrir</button>
+    <button type="button" class="rojo" id="reiniciar">Reiniciar (borra todo)</button>
+    <p class="suave">El sorteo cierra solo en la fecha de cierre. «Cerrar ahora» lo adelanta; «Reabrir» solo deshace un cierre manual. «Reiniciar» guarda una copia en /datos y empieza de cero con el stock inicial.</p>
+    <p id="msg" role="status" aria-live="polite"></p>
+  </div>
+  <div class="caja"><table><thead><tr><th>N.º</th><th>Nombre</th><th>WhatsApp</th><th>Premio</th><th>Código</th><th>Hora (Lima)</th></tr></thead><tbody id="filas"></tbody></table></div>
+</main>
+<script>
+(function () {
+  "use strict";
+  var k = new URLSearchParams(location.search).get("k") || "", $ = function (id) { return document.getElementById(id); };
+  function td(tr, v, cls) { var c = document.createElement("td"); if (cls) c.className = cls; if (v instanceof Node) c.appendChild(v); else c.textContent = v; tr.appendChild(c); }
+  function pintar(x) {
+    var e = x.estado, n = { gratis: 0, s29: 0, s32: 0, s35: 0 };
+    (e.participaciones || []).forEach(function (p) { n[p.premio] = (n[p.premio] || 0) + 1; });
+    var c = $("cifras"); c.textContent = "";
+    [["Participantes", e.participaciones.length], ["Beca 100 % (gratis)", n.gratis + " / " + e.inicial100], ["Cupones S/ 29", n.s29 + " / " + e.inicial29], ["Cupones S/ 32", n.s32 + " / " + e.inicial32], ["S/ 35", n.s35], ["Esperados", e.esperados], ["Estado", x.cerrado ? "cerrado" : "abierto"], ["Cierre (Lima)", x.cierre]].forEach(function (v) {
+      var d = document.createElement("div"), b = document.createElement("b"); b.textContent = v[1]; d.appendChild(b); d.appendChild(document.createTextNode(v[0])); c.appendChild(d);
+    });
+    var f = $("filas"); f.textContent = "";
+    e.participaciones.slice().reverse().forEach(function (p) {
+      var tr = document.createElement("tr"), a = document.createElement("a"), s = document.createElement("span");
+      a.href = "https://wa.me/51" + p.tel; a.target = "_blank"; a.rel = "noopener"; a.textContent = p.tel.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
+      s.className = "ficha p-" + p.premio; s.textContent = ({ gratis: "Gratis", s29: "S/ 29", s32: "S/ 32", s35: "S/ 35" })[p.premio] || p.premio;
+      td(tr, p.n); td(tr, p.nombre); td(tr, a, "mono"); td(tr, s); td(tr, p.codigo, "mono"); td(tr, new Date(p.hora).toLocaleString("es-PE", { timeZone: "America/Lima" }));
+      f.appendChild(tr);
+    });
+  }
+  function pedir(ruta, metodo) {
+    return fetch(ruta, { method: metodo || "GET", headers: { "X-Clave": k }, cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(pintar)
+      .catch(function (err) { $("msg").textContent = "No se pudo leer el panel (" + err.message + ")."; });
+  }
+  var armado = {};
+  function confirmar(b, ruta, texto) {
+    b.addEventListener("click", function () {
+      if (!armado[ruta]) { armado[ruta] = b.textContent; b.textContent = texto; setTimeout(function () { if (armado[ruta]) { b.textContent = armado[ruta]; armado[ruta] = null; } }, 4000); return; }
+      b.textContent = armado[ruta]; armado[ruta] = null; pedir(ruta, "POST").then(function () { $("msg").textContent = "Hecho."; });
+    });
+  }
+  confirmar($("cerrar"), "api/admin/cerrar", "¿Seguro? Toca otra vez");
+  confirmar($("reabrir"), "api/admin/reabrir", "¿Seguro? Toca otra vez");
+  confirmar($("reiniciar"), "api/admin/reiniciar", "¿Borrar todo? Toca otra vez");
+  pedir("api/admin/estado"); setInterval(function () { pedir("api/admin/estado"); }, 5000);
+})();
+</script>
+</body>
+</html>

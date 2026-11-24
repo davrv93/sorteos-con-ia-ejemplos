@@ -1,0 +1,48 @@
+[
+ {
+  "slug": "taller-a",
+  "titulo": "Taller de ejemplo A",
+  "categoria": "Ejemplo",
+  "bajada": "Tres sesiones prácticas. Cambia este texto por el de tu curso.",
+  "aprenderas": [
+   "Primer resultado del taller",
+   "Segundo resultado",
+   "Tercer resultado"
+  ],
+  "temario": [
+   "Sesión 1",
+   "Sesión 2",
+   "Sesión 3"
+  ],
+  "formato": "3 sesiones de 90 min",
+  "fechas": [
+   "Fechas de ejemplo"
+  ],
+  "precio_texto": "S/ 100",
+  "soles": 100,
+  "antes": null,
+  "brochure": "taller-a"
+ },
+ {
+  "slug": "taller-b",
+  "titulo": "Taller de ejemplo B",
+  "categoria": "Ejemplo",
+  "bajada": "Un taller corto. Cambia este texto.",
+  "aprenderas": [
+   "Un resultado concreto",
+   "Otro resultado"
+  ],
+  "temario": [
+   "Parte 1",
+   "Parte 2"
+  ],
+  "formato": "1 sesión de 2 h",
+  "fechas": [
+   "Fecha de ejemplo"
+  ],
+  "precio_texto": "S/ 60",
+  "soles": 60,
+  "antes": null,
+  "brochure": "taller-b"
+ }
+]

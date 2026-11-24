@@ -1,0 +1,19 @@
+# docker compose up -d --build    y abre http://127.0.0.1:8103
+# El panel de administración está en http://127.0.0.1:8103/admin (la clave va en .env).
+services:
+  sorteo:
+    build: .
+    environment:
+      PORT: "8080"
+      GACHAPON_DATOS: /datos
+      GACHAPON_CLAVE: ${GACHAPON_CLAVE:-cambia-esta-clave-larga}
+    ports:
+      - "127.0.0.1:${PUERTO:-8103}:8080"
+    volumes:
+      - datos:/datos
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+volumes:
+  datos: {}
